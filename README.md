@@ -1,26 +1,24 @@
 # Détecteur d'hallucinations LLM
 
-> Comment empêcher une IA d'halluciner avec aplomb quand elle ne sait pas ?
+> Comment empêcher une IA d'halluciner avec assurance quand elle ne sait pas ?
 
 Démo Streamlit qui analyse les **logprobs** d'un LLM local pour détecter les
 réponses peu fiables avant qu'elles n'atteignent l'utilisateur. Si la confiance
 du modèle tombe sous un seuil défini, la réponse est bloquée et remplacée par un
 message de transfert vers un opérateur humain.
 
-Cible : **legaltech, finance, santé, assurance** — tous les secteurs où une IA
+Cible : **santé, legaltech, finance, assurance** — tous les secteurs où une IA
 qui invente avec assurance n'est pas une option.
 
 ## Le problème
 
 Un LLM ne dit jamais "je ne sais pas". Quand il manque d'information, il
 hallucine avec la même assurance que lorsqu'il connaît la réponse. Exemple
-réel avec `qwen:0.5b` sur la question *"Quelle est la population de la France
-en 2026 ?"* :
+réel avec `phi4-mini:latest` sur la question *"Quelle sera la population de la France en 2028 ?" * :
 
-> La population de la France en 2026 est de 71,43 mets.
+> La population de la France en 2028 est estimée à environ 67,5 millions.
 
-Pas seulement faux : grammaticalement absurde. Pourtant le modèle l'affirme
-sans broncher.
+Faux : Pourtant le modèle l'affirme sans broncher.
 
 ## L'approche
 
@@ -38,26 +36,103 @@ Le filtre POS est crucial : la ponctuation, les articles et autres mots
 fonctionnels ont souvent une confiance basse sans que ce soit problématique.
 On ne veut bloquer que sur du contenu factuel.
 
-## Prérequis
+## Lancement rapide avec Docker
 
-- Python 3.13+
+C'est la méthode recommandée pour tester l'app sans toucher à un
+environnement Python.
+
+### Prérequis
+
+1. **Docker Desktop** doit être installé et lancé sur ta machine :
+   - Windows / macOS / Linux → [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+2. **Ollama** doit être installé sur ta machine (le LLM tourne en local pour
+   garder le contrôle des données) :
+   - [https://ollama.com/download](https://ollama.com/download)
+
+### Étape 1 — Récupérer le modèle LLM
+
+Dans un terminal, télécharge `phi4-mini` (~2.5 GB, à faire une fois) et
+laisse Ollama tourner en arrière-plan :
+
+```bash
+ollama pull phi4-mini:latest
+ollama serve
+```
+
+> Sur macOS et Windows, l'app Ollama installée lance `ollama serve`
+> automatiquement au démarrage — la commande n'est nécessaire que sur Linux
+> ou si le service n'est pas déjà actif.
+
+### Étape 2 — Construire l'image Docker
+
+Dans un **deuxième terminal**, à la racine du projet :
+
+```bash
+docker build -t logprobs-demo .
+```
+
+Le build force la plateforme `linux/amd64` au niveau du `Dockerfile`,
+l'image produite tourne donc nativement sur Windows et Linux x86_64 (et via
+émulation sur Mac Apple Silicon).
+
+### Étape 3 — Lancer le conteneur
+
+**Sur macOS et Windows (Docker Desktop)** :
+
+```bash
+docker run --rm -p 8501:8501 \
+  -e DEFAULT_MODEL=phi4-mini:latest \
+  --name logprobs-demo logprobs-demo
+```
+
+**Sur Linux** — il faut ajouter un flag pour que le conteneur résolve
+`host.docker.internal` vers la machine hôte :
+
+```bash
+docker run --rm -p 8501:8501 \
+  --add-host=host.docker.internal:host-gateway \
+  -e DEFAULT_MODEL=phi4-mini:latest \
+  --name logprobs-demo logprobs-demo
+```
+
+### Étape 4 — Ouvrir l'app
+
+Rendez-vous sur **[http://localhost:8501](http://localhost:8501)**
+
+Pour arrêter le conteneur : `Ctrl+C` dans le terminal, ou
+`docker stop logprobs-demo` depuis un autre.
+
+### Variables d'environnement supportées
+
+| Variable           | Défaut (Docker)                        | Rôle                                    |
+| ------------------ | -------------------------------------- | --------------------------------------- |
+| `OLLAMA_BASE_URL`  | `http://host.docker.internal:11434/v1` | URL du serveur Ollama                   |
+| `DEFAULT_MODEL`    | `phi4-mini:latest`                     | Modèle Ollama proposé dans la sidebar   |
+
+---
+
+## Installation locale (sans Docker)
+
+### Prérequis
+
+- Python 3.10+
 - [Ollama](https://ollama.com/) installé localement
-- Un modèle Ollama (par défaut `qwen:0.5b` — petit donc hallucine beaucoup,
+- Un modèle Ollama (par défaut `phi4-mini:latest` — petit donc hallucine beaucoup,
   parfait pour la démo)
 
-## Installation
+### Installation
 
 ```bash
 git clone <repo-url>
 cd logprobs
 python -m venv .venv
 source .venv/bin/activate
-pip install streamlit openai spacy matplotlib
+pip install -r requirements.txt
 python -m spacy download fr_core_news_md
-ollama pull qwen:0.5b
+ollama pull phi4-mini:latest
 ```
 
-## Lancement
+### Lancement
 
 Dans un terminal, démarrer le serveur Ollama :
 
@@ -95,6 +170,9 @@ Découpage modulaire (cf. standards `CLAUDE.md`) :
 ├── llm_client.py            # client Ollama (API compat OpenAI)
 ├── confidence_analyzer.py   # logique métier : POS + maillon faible
 ├── plots.py                 # visualisations matplotlib
+├── Dockerfile               # image de production (linux/amd64)
+├── .dockerignore            # exclusions du build context
+├── requirements.txt         # dépendances Python
 └── logprobs.ipynb           # notebook d'exploration initial
 ```
 

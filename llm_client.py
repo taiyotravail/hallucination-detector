@@ -20,8 +20,7 @@ def query_model(client: OpenAI, model: str, question: str):
             {
                 "role": "system",
                 "content": (
-                    "Tu es un assistant factuel. Réponds de manière concise et "
-                    "directe à la question posée."
+                    "Tu es un assistant expert en analyse de données. Ta règle stricte : répondre à la question en une seule phrase affirmative et factuelle. Tu as l'interdiction de te justifier ou d'ajouter des avertissements."
                 ),
             },
             {"role": "user", "content": question},
