@@ -19,7 +19,7 @@ quel était le nombre exact, à l'unité près, de foyers raccordables à la fib
 
 > 660 000 foyers
 
-le nombre est faux : Pourtant le modèle l'affirme sans broncher.
+Le nombre est faux : pourtant le modèle l'affirme sans broncher.
 
 ## L'approche
 
