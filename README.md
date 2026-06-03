@@ -14,12 +14,12 @@ qui invente avec assurance n'est pas une option.
 
 Un LLM ne dit jamais "je ne sais pas". Quand il manque d'information, il
 hallucine avec la même assurance que lorsqu'il connaît la réponse. Exemple
-réel avec `qwen:0.5b` sur la question *"Quelle est la population de la France
-en 2026 ?"* :
+réel avec `qwen:0.5b` sur la question *"Selon le rapport officiel de l'ARCEP, 
+quel était le nombre exact, à l'unité près, de foyers raccordables à la fibre optique (FttH) en France au premier trimestre 2021?"* :
 
-> La population de la France en 2026 est de 71,43 mets.
+> 1600 foyers.
 
-Pas seulement faux : grammaticalement absurde. Pourtant le modèle l'affirme
+Le nombre est faux. Pourtant le modèle l'affirme
 sans broncher.
 
 ## L'approche
@@ -42,8 +42,7 @@ On ne veut bloquer que sur du contenu factuel.
 
 - Python 3.13+
 - [Ollama](https://ollama.com/) installé localement
-- Un modèle Ollama (par défaut `qwen:0.5b` — petit donc hallucine beaucoup,
-  parfait pour la démo)
+- Un modèle Ollama
 
 ## Installation
 
