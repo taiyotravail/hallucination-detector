@@ -14,11 +14,12 @@ qui invente avec assurance n'est pas une option.
 
 Un LLM ne dit jamais "je ne sais pas". Quand il manque d'information, il
 hallucine avec la même assurance que lorsqu'il connaît la réponse. Exemple
-réel avec `phi4-mini:latest` sur la question *"Quelle sera la population de la France en 2028 ?" * :
+réel avec `phi4-mini:latest` sur la question *"Selon le rapport officiel de l'ARCEP, 
+quel était le nombre exact, à l'unité près, de foyers raccordables à la fibre optique (FttH) en France au premier trimestre 2021?" * :
 
-> La population de la France en 2028 est estimée à environ 67,5 millions.
+> 660 foyers
 
-Faux : Pourtant le modèle l'affirme sans broncher.
+le nombre est faux : Pourtant le modèle l'affirme sans broncher.
 
 ## L'approche
 
